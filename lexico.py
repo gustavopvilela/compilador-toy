@@ -15,7 +15,16 @@ class Lexico:
         return self.indice >= self.tamanho_codigo
 
     def descartar_brancos_e_comentarios (self):
-        pass
+        while not self.fim_de_arquivo():
+            caractere = self.get_char()
+
+            if caractere == ' ' or caractere == '\n':   # O caractere é um espaço ou quebra de linha
+                continue
+            elif caractere == '#':  # Ler comentário
+                while caractere != '\n': caractere = self.get_char()
+            else:   # O caractere não se enquadra nas condiçoes anteriores
+                self.unget_char(caractere)
+                break
 
     def get_char (self):
         if self.fim_de_arquivo():   # Chegou no final do arquivo
@@ -41,11 +50,13 @@ class Lexico:
         pass
 
     def get_token (self):
+        self.descartar_brancos_e_comentarios()  # Descartamos brancos e comentários da linha que estamos analisando
+
         estado = Estado.INICIAL
         simbolo = self.get_char()
         lexema = ''
 
-        # TODO: Descartar brancos e comentários aqui
+        self.descartar_brancos_e_comentarios()  # Descartamos brancos e comentários da linha que estamos analisando
 
         linha = self.linha
         coluna = self.coluna
@@ -67,9 +78,35 @@ class Lexico:
                     lexema += simbolo
                     return tk.erro, lexema, linha, coluna
 
-            if estado == Estado.IDENTS_OU_PALAVRAS_RESERVADAS: pass
-            if estado == Estado.NUMEROS: pass
-            if estado == Estado.STRINGS: pass
+            if estado == Estado.IDENTS_OU_PALAVRAS_RESERVADAS:
+                if simbolo.isalpha() or simbolo.isdigit():  # Um identificador deve começar com uma letra, mas pode conter números
+                    lexema += simbolo
+                    simbolo = self.get_char()
+                else:
+                    self.unget_char(simbolo)
+                    token = tk.reservadas(lexema)
+                    return token, tk.msg(token), linha, coluna
+
+            if estado == Estado.NUMEROS:
+                if simbolo.isdigit():   # Um número não pode conter letras
+                    lexema += simbolo
+                    simbolo = self.get_char()
+                else:
+                    self.unget_char(simbolo)
+                    return tk.numero, tk.msg(tk.numero), linha, coluna
+
+            if estado == Estado.STRINGS:
+                while True:
+                    simbolo = self.get_char()
+
+                    if simbolo == '\0':    # Chegou no fim do arquivo sem a outra aspa
+                        return tk.erro, tk.msg(tk.erro), linha, coluna
+
+                    if simbolo == '"':
+                        return tk.string, lexema, linha, coluna
+
+                    lexema += simbolo
+
             if estado == Estado.MENOR_OU_MENOR_IGUAL: pass
             if estado == Estado.MAIOR_OU_MAIOR_IGUAL: pass
             if estado == Estado.ATRIBUICAO_OU_IGUALDADE: pass
