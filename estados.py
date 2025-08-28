@@ -1,0 +1,11 @@
+from enum import IntEnum
+
+class Estado(IntEnum):
+    INICIAL = 1
+    IDENTS_OU_PALAVRAS_RESERVADAS = 2
+    NUMEROS = 3
+    STRINGS = 4
+    MAIOR_OU_MAIOR_IGUAL = 5
+    MENOR_OU_MENOR_IGUAL = 6
+    ATRIBUICAO_OU_IGUALDADE = 7
+    DIFERENTE = 8
