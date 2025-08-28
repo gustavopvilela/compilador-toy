@@ -46,8 +46,8 @@ class Lexico:
         if self.indice > 0: self.indice -= 1
         self.coluna -= 1
 
-    def imprimir_token (self, token):
-        pass
+    def imprimir_token (self, id, lexema, linha, coluna):
+        print(f'Linha: {linha}, Coluna: {coluna} -> <{id}, "{lexema}">')
 
     def get_token (self):
         self.descartar_brancos_e_comentarios()  # Descartamos brancos e comentários da linha que estamos analisando
